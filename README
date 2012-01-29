@@ -1,0 +1,75 @@
+WARNING: THIS FILE IS CURRENTLY OUT OF DATE (but still very relevant, just not complete)
+
+This Makefile is designed to compile a toolchain and different tools for cross compiling to ARM, and debugging software running on ARM mcu's.
+It automatically installs the compiled tool in a subdirectory named install. Look in install/bin for binaries.
+If you want to be able to run the tools from anywhere on the commandline without specifying their full path, add the install/bin directory to your search path.
+
+Example:
+  $ export PATH=/home/bob/toolchain/install/bin:$PATH
+
+(This environment variable contains a colon separated list of absolute paths where your shell should look when trying to execute an application.)
+For extra fun and profit, you can add the export line to your .bashrc file (or your particular shell flavor), once you decided that you're OK with the installation directory location. That way, the path will be extended every time a shell is started. No more "$!#@ I forgot to export my PATH" ;-).
+If you have multiple installations of the same program (for example an openocd installed with your package manager, and an openocd from this toolchain) you can always check which one will be executed with the `which` utility.
+
+Example:
+  $ which openocd
+  /home/robbe/toolchain/install/bin/openocd
+
+The Makefile expects some tarballs to live in a directory named tar. The extraction, configuring and building of these source tarballs happens automatically.
+There is no magic going on, the makefile has been created and tested for a specific set of software.
+
+Currently, it has been tested with these sources:
+
+  - binutils-2.19.1.tar.bz2
+    http://www.gnu.org/software/binutils/
+
+  - gcc-4.4.1.tar.bz2
+    http://gcc.gnu.org/
+    NOTE: use -fno-dwarf2-cfi-asm when compiling with this GCC version
+          (see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=40521)
+
+  - gdb-6.8.tar.bz2
+    http://www.gnu.org/software/gdb/
+
+  - insight-6.8-1.tar.bz2
+    http://sources.redhat.com/insight/
+
+  - newlib-1.17.0.tar.bz2
+    http://sourceware.org/newlib/
+
+  - openocd-0.2.0.tar.bz2
+    http://openocd.berlios.de/web/
+    NOTE: Configuration files are included at the same location as the makefile.
+          This consists of openocd.conf which includes other config files in the "conf" directory.
+
+  - lpc21isp_183.tar.gz
+    http://sourceforge.net/projects/lpc21isp/
+    NOTE: This source archive has been modified; The sources were recompressed after putting them in a folder.
+          It's the easiest workaround to make things, well, work.
+          (The makefile expects archives to extract their contents to a single folder.)
+
+  - gmp-4.3.1.tar.bz2
+    http://gmplib.org/
+
+  - mpfr-2.4.1.tar.bz2
+    http://www.mpfr.org/
+
+  - Newlib Port Layer Release 5a (original filename "newlib-lpc_rel_5a.zip")
+    http://www.aeolusdevelopment.com/Articles/download.html
+    NOTE: This is a package for manual use in your source tree.
+          Compiling and installing it as a library is currently not supported by the makefile.
+
+On following platforms:
+  - Debian testing (squeeze)
+  - Ubuntu 9.04 (jaunty)
+  - FreeBSD 7.2-RELEASE
+  - Mac OS X 10.5.7 (9J61)
+These version numbers were obtained by using 'lsb_release -a' for Debian and Ubuntu, 'uname -rs' for FreeBSD and 'sw_vers' for Mac OS X.
+
+The sources were obtained from the respective official webpages.
+All the source is vanilla, this means I did not patch or change anything in the sources.
+When the source tarballs were not available in the bzip2 format, I recompressed them.
+
+The Makefile should be able to handle newer versions of these packages. To use a newer version of a program you simply replace the tarball with a newer version. Make sure that the new tarball also starts with the name of the program as shown below, this is how the Makefile recognises the sources it needs.
+
+As of now, the only test platform available to me is the Olimex LPC-H22XX development board. If you experience trouble with different hardware, I probably won't be able to help you. On the other hand, if you use the same hardware, please contact me so we can try and fix the problem.
