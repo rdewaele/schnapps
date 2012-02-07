@@ -55,7 +55,11 @@ MIRROR_MPFR_IDX := $(MIRROR_MPFR_GET:%=%/$(SORTED_IDX))
 # the first one, as it should be listed first, under "latest version", which appears before
 # "previous versions" on the download page.
 # Furthermore, this page only lists gzipped archives!
-MIRROR_MPC_IDX := http://www.multiprecision.org/index.php?prog=mpc&page=download
+MIRROR_MPC_ROOT    := http://www.multiprecision.org
+MIRROR_MPC_IDX     := $(MIRROR_MPC_ROOT:%=%/index.php?prog=mpc&page=download)
+MIRROR_MPC_RELGET  := $(shell $(CURLIDX) '$(MIRROR_MPC_IDX)' | $(LINKFLTR) | grep -m1 'mpc-.*\.tar\.gz$$')
+MIRROR_MPC_GETFILE := $(MIRROR_MPC_ROOT:%=%/$(MIRROR_MPC_RELGET))
+MPC_FILE           := $(shell echo '$(MIRROR_MPC_RELGET)' | sed -e 's/.*\/mpc-/mpc-/') 
 
 ###########
 # Targets #
@@ -79,10 +83,10 @@ MPFR := $(shell $(CURLIDX) '$(MIRROR_MPFR_IDX)' | $(LINKFLTR) | grep -m1 '^mpfr-
 INSIGHT := $(shell $(CURLIDX) '$(MIRROR_INSIGHT_IDX)' | $(LINKFLTR) | grep -m1 '^insight-.*\.tar\.bz2$$')
 
 # MPC
-MPC := $(shell $(CURLIDX) '$(MIRROR_MPC_IDX)' | $(LINKFLTR) | grep -m1 'mpc-.*\.tar\.gz$$')
+MPC := $(MPC_FILE)
 
 # default rule fetches ALL the things
-all: $(BINUTILS) $(GCC) $(GDB) $(GMP) $(INSIGHT) $(MPFR)
+all: $(BINUTILS) $(GCC) $(GDB) $(GMP) $(INSIGHT) $(MPFR) $(MPC)
 	@echo ">>> BINUTILS: " "$(BINUTILS)"
 	@echo ">>> GCC:      " "$(GCC)"
 	@echo ">>> GDB:      " "$(GDB)"
@@ -116,5 +120,9 @@ $(MPFR):
 $(INSIGHT):
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_INSIGHT_GET)/$@' -o $@
+
+$(MPC):
+	@echo downloading file: $@
+	$(CURLGET) '$(MIRROR_MPC_GETFILE)' -o $@
 
 .PHONY: all
