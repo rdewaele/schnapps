@@ -283,6 +283,4 @@ qemu: $(SRC_DIR)/qemu $(BLD_DIR)/qemu
 # CLEANING UP
 .PHONY mrproper:
 mrproper:
-	rm -rf $(filter-out %/tar, $(DIRECTORIES)) $(PACKAGES) \
-               gmp mpfr mpc binutils gcc-gcc newlib gcc-all gdb insight \
-							 openocd lpc21isp qemu
+	rm -rf $(filter-out %/tar, $(DIRECTORIES)) $(PACKAGES) gcc-gcc gcc-all
