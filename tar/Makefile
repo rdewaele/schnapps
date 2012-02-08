@@ -105,6 +105,9 @@ all: $(BINUTILS) $(GCC) $(GDB) $(GMP) $(INSIGHT) $(MPFR) $(MPC) $(NEWLIB)
 	@echo ">>> MPFR:     " "$(MPFR)"
 	@echo ">>> MPC:      " "$(MPC)"
 	@echo ">>> NEWLIB:   " "$(NEWLIB)"
+	@echo ">>> OPENOCD:  " "$(OPENOCD)"
+	@echo ">>> LPC21ISP: " "$(LPC21ISP)"
+	@echo ">>> QEMU:     " "$(QEMU)"
 
 # --- All rules below are in the same format, and they fetch the different packages. --- #
 
