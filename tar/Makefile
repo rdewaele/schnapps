@@ -1,10 +1,16 @@
+# XXX Note that running this makefile with multiple jobs can result in
+# obnoxious output to the screen, as every curl instance will try to
+# display its progress bar. ;-)
+
 ###################################
 # HTTP/FTP URL fetching with curl #
 ###################################
 # directory index fetching: silent, follow redirections
-CURLIDX:=curl -s -L
+CURLIDX := curl -s -L
 # archive fetching: follow redirections, show simple progress bar
-CURLGET:=curl -L -\\\#
+CURLGET := curl -L -\\\#
+# curl No ReDirection, silent
+CURLNRD := curl -s
 
 ###########################################
 # link filtering (html parsing) with perl #
@@ -68,6 +74,20 @@ MIRROR_NEWLIB_ROOT    := ftp://sources.redhat.com/pub/newlib
 MIRROR_NEWLIB_IDX     := $(MIRROR_NEWLIB_ROOT:%=%/index.html)
 MIRROR_NEWLIB_GETFILE := $(shell $(CURLIDX) '$(MIRROR_NEWLIB_IDX)' | $(LINKFLTR) | grep -m1 'newlib-.*\.tar\.gz$$')
 
+# OpenOCD
+# XXX sourceforge mirror: this download page will redirect to the actual download, so if we don't follow the redirection, we can fetch the filename
+MIRROR_OPENOCD_GETFILE := http://sourceforge.net/projects/openocd/files/latest/download
+
+# lpc21isp
+# XXX sourceforge mirror: this download page will redirect to the actual download, so if we don't follow the redirection, we can fetch the filename
+# Also noteworthy: for some reason the version number is prepended with an underscore instead of a dash in the filename.
+MIRROR_LPC21ISP_GETFILE := http://sourceforge.net/projects/lpc21isp/files/latest/download
+
+# Qemu
+# XXX Dowload page lists absolute links
+MIRROR_QEMU_IDX     := http://wiki.qemu.org/Download
+MIRROR_QEMU_GETFILE := $(shell $(CURLIDX) '$(MIRROR_QEMU_IDX)' | $(LINKFLTR) | grep -m1 'qemu-.*\.tar\.gz$$')
+
 ###########
 # Targets #
 ##########
@@ -95,8 +115,17 @@ MPC := $(shell echo '$(MIRROR_MPC_RELGET)' | sed -e 's/.*\/mpc-/mpc-/')
 # Newlib
 NEWLIB := $(shell echo '$(MIRROR_NEWLIB_GETFILE)' | sed -e 's/.*\/newlib-/newlib-/') 
 
+# OpenOCD
+OPENOCD := $(shell $(CURLNRD) '$(MIRROR_OPENOCD_GETFILE)' | $(LINKFLTR) | sed -e 's/.*\/openocd-/openocd-/' -e 's/\?.*//')
+
+# lpc21isp
+LPC21ISP := $(shell $(CURLNRD) '$(MIRROR_LPC21ISP_GETFILE)' | $(LINKFLTR) | sed -e 's/.*\/lpc21isp_/lpc21isp_/' -e 's/\?.*//')
+
+# Qemu
+QEMU := $(shell echo '$(MIRROR_QEMU_GETFILE)' | sed -e 's/.*\/qemu-/qemu-/') 
+
 # default rule fetches ALL the things
-all: $(BINUTILS) $(GCC) $(GDB) $(GMP) $(INSIGHT) $(MPFR) $(MPC) $(NEWLIB)
+all: $(BINUTILS) $(GCC) $(GDB) $(GMP) $(INSIGHT) $(MPFR) $(MPC) $(NEWLIB) $(OPENOCD) $(LPC21ISP) $(QEMU)
 	@echo ">>> BINUTILS: " "$(BINUTILS)"
 	@echo ">>> GCC:      " "$(GCC)"
 	@echo ">>> GDB:      " "$(GDB)"
@@ -109,12 +138,19 @@ all: $(BINUTILS) $(GCC) $(GDB) $(GMP) $(INSIGHT) $(MPFR) $(MPC) $(NEWLIB)
 	@echo ">>> LPC21ISP: " "$(LPC21ISP)"
 	@echo ">>> QEMU:     " "$(QEMU)"
 
+# clean XXX removes anything with '.tar' in the name!
+clean:
+	rm -rf *.tar*
+
 # --- All rules below are in the same format, and they fetch the different packages. --- #
+
+# XXX on some systems, something weird happens: curl shows its progress bar twice
+# This is classified as "not our problem".
 
 $(BINUTILS):
 	@echo downloading file: $@
-	@$(CURLGET) '$(MIRROR_BINUTILS_GET)/$@' -o $@
-
+	@$(CURLGET) '$(MIRROR_BINUTILS_GET)/$@' -o $@ 2>&1 | grep \\\#
+	
 $(GCC):
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_GCC_GET)/$@' -o $@
@@ -126,7 +162,7 @@ $(GDB):
 $(GMP):
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_GMP_GET)/$@' -o $@
-
+	
 $(MPFR):
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_MPFR_GET)/$@' -o $@
@@ -137,10 +173,22 @@ $(INSIGHT):
 
 $(MPC):
 	@echo downloading file: $@
-	$(CURLGET) '$(MIRROR_MPC_GETFILE)' -o $@
+	@$(CURLGET) '$(MIRROR_MPC_GETFILE)' -o $@
 
 $(NEWLIB):
 	@echo downloading file: $@
-	$(CURLGET) '$(MIRROR_NEWLIB_GETFILE)' -o $@
+	@$(CURLGET) '$(MIRROR_NEWLIB_GETFILE)' -o $@
+
+$(OPENOCD):
+	@echo downloading file: $@
+	@$(CURLGET) '$(MIRROR_OPENOCD_GETFILE)' -o $@
+
+$(LPC21ISP):
+	@echo downloading file: $@
+	@$(CURLGET) '$(MIRROR_LPC21ISP_GETFILE)' -o $@
+
+$(QEMU):
+	@echo downloading file: $@
+	@$(CURLGET) '$(MIRROR_QEMU_GETFILE)' -o $@
 
 .PHONY: all
