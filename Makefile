@@ -38,7 +38,7 @@
 #
 
 # Contains the package names, 'sources' and 'builds' targets are hereupon based.
-PACKAGES     = binutils gcc gdb gmp insight mpfr mpc newlib openocd lpc21isp
+PACKAGES     = binutils gcc gdb gmp insight mpfr mpc newlib openocd lpc21isp qemu
 
 # Folder locations, respecively:
 # tarballs, sources, build, install.
@@ -87,6 +87,26 @@ GDB_OPT      = $(TC_OPT)
 INSIGHT_OPT  = $(TC_OPT)
 OPENOCD_OPT  = --prefix=$(INS_DIR) --enable-ft2232_libftdi
 
+# for QEMU, we disable ALL the things
+PYTHON       = python # can be overridden with command arguments
+QEMU_OPT     = --prefix=$(INS_DIR) \
+							 --target-list='arm-softmmu' \
+							 --python=$(PYTHON) \
+							 --audio-drv-list='' --audio-card-list='' --disable-debug-tcg \
+							 --disable-sparse --disable-strip --disable-werror --disable-sdl \
+						 	 --disable-vnc --disable-xen --disable-brlapi --disable-vnc-tls \
+						 	 --disable-vnc-sasl --disable-vnc-jpeg --disable-vnc-png \
+						 	 --disable-vnc-thread --disable-curses --disable-curl \
+							 --disable-fdt --disable-check-utests --disable-bluez \
+							 --disable-slirp --disable-kvm --disable-nptl --disable-system \
+						 	 --disable-user --disable-linux-user --disable-darwin-user \
+						 	 --disable-bsd-user --disable-guest-base --disable-pie \
+							 --disable-uuid --disable-vde --disable-linux-aio --disable-attr \
+						 	 --disable-blobs --disable-docs --disable-vhost-net \
+							 --disable-spice --disable-libiscsi --disable-smartcard \
+							 --disable-smartcard-nss --disable-usb-redir \
+							 --disable-guest-agent --disable-opengl
+
 
 #
 # GENERIC TARGET DEFINITIONS
@@ -102,6 +122,11 @@ all:
 	@echo "gmp or mpfr not found, try executing:"
 	@echo "make mrproper && make mpfr-apple && make toolchain"
 	@echo "--------------------------------------------------------------------------------"
+	@echo "If you're running for the first time, please run 'make update-packages'. This"
+	@echo "will download the latest versions of all packages needed for this toolchain."
+	@echo "You can also opt to manually download some packages and put them in the 'tar'"
+	@echo "directory."
+	@echo "--------------------------------------------------------------------------------"
 	@echo
 	@echo "Common targets:"
 	@echo "toolchain       -> arm-elf-gcc, with newlib as C library, and binutils"
@@ -109,6 +134,7 @@ all:
 	@echo "insight         -> Insight, a front-end for GDB"
 	@echo "openocd         -> openOCD, an on-chip debugger"
 	@echo "lpc21isp        -> lpc21isp, an in-circuit programming (ISP) tool"
+	@echo "qemu            -> Qemu processor emulator"
 	@echo
 	@echo "Other targets (normally only used as part of 'toolchain', in this order):"
 	@echo "binutils        -> GNU binutils"
@@ -145,6 +171,9 @@ $(SOURCES): $(SRC_DIR)/%: $(wildcard $(TAR_DIR)/%*) | $(SRC_DIR)
 	rm -rf $(SRC_DIR)/$**
 	tar xf $(TAR_DIR)/$** -C $(SRC_DIR)
 	mv $(SRC_DIR)/$** $@
+
+update-packages:
+	$(MAKE) -C $(TAR_DIR)
 
 
 #
@@ -273,12 +302,22 @@ openocd: $(SRC_DIR)/openocd
 		$(MAKE) install
 	touch $@
 
+
 # lpc21isp
 # The build system of lpc21isp is nothing more than a simple makefile.
 lpc21isp: $(SRC_DIR)/lpc21isp
 	cd $< && \
 		$(MAKE) \
 		&& cp lpc21isp $(INS_DIR)/bin
+	touch $@
+
+
+# QEMU
+qemu: $(SRC_DIR)/qemu $(BLD_DIR)/qemu
+	cd $(BLD_DIR)/qemu && \
+		$</configure $(QEMU_OPT) && \
+		$(MAKE) all && \
+		$(MAKE) install
 	touch $@
 
 
