@@ -59,7 +59,14 @@ MIRROR_MPC_ROOT    := http://www.multiprecision.org
 MIRROR_MPC_IDX     := $(MIRROR_MPC_ROOT:%=%/index.php?prog=mpc&page=download)
 MIRROR_MPC_RELGET  := $(shell $(CURLIDX) '$(MIRROR_MPC_IDX)' | $(LINKFLTR) | grep -m1 'mpc-.*\.tar\.gz$$')
 MIRROR_MPC_GETFILE := $(MIRROR_MPC_ROOT:%=%/$(MIRROR_MPC_RELGET))
-MPC_FILE           := $(shell echo '$(MIRROR_MPC_RELGET)' | sed -e 's/.*\/mpc-/mpc-/') 
+
+# Newlib
+# XXX Only one (ftp) site hosts the yearly releases.
+# The ftp directory contains an up to date index.html file, which lists all releases available, newest one first.
+# Note that the links provided by this html file are absolute paths.
+MIRROR_NEWLIB_ROOT    := ftp://sources.redhat.com/pub/newlib
+MIRROR_NEWLIB_IDX     := $(MIRROR_NEWLIB_ROOT:%=%/index.html)
+MIRROR_NEWLIB_GETFILE := $(shell $(CURLIDX) '$(MIRROR_NEWLIB_IDX)' | $(LINKFLTR) | grep -m1 'newlib-.*\.tar\.gz$$')
 
 ###########
 # Targets #
@@ -83,10 +90,13 @@ MPFR := $(shell $(CURLIDX) '$(MIRROR_MPFR_IDX)' | $(LINKFLTR) | grep -m1 '^mpfr-
 INSIGHT := $(shell $(CURLIDX) '$(MIRROR_INSIGHT_IDX)' | $(LINKFLTR) | grep -m1 '^insight-.*\.tar\.bz2$$')
 
 # MPC
-MPC := $(MPC_FILE)
+MPC := $(shell echo '$(MIRROR_MPC_RELGET)' | sed -e 's/.*\/mpc-/mpc-/') 
+
+# Newlib
+NEWLIB := $(shell echo '$(MIRROR_NEWLIB_GETFILE)' | sed -e 's/.*\/newlib-/newlib-/') 
 
 # default rule fetches ALL the things
-all: $(BINUTILS) $(GCC) $(GDB) $(GMP) $(INSIGHT) $(MPFR) $(MPC)
+all: $(BINUTILS) $(GCC) $(GDB) $(GMP) $(INSIGHT) $(MPFR) $(MPC) $(NEWLIB)
 	@echo ">>> BINUTILS: " "$(BINUTILS)"
 	@echo ">>> GCC:      " "$(GCC)"
 	@echo ">>> GDB:      " "$(GDB)"
@@ -94,6 +104,7 @@ all: $(BINUTILS) $(GCC) $(GDB) $(GMP) $(INSIGHT) $(MPFR) $(MPC)
 	@echo ">>> INSIGHT:  " "$(INSIGHT)"
 	@echo ">>> MPFR:     " "$(MPFR)"
 	@echo ">>> MPC:      " "$(MPC)"
+	@echo ">>> NEWLIB:   " "$(NEWLIB)"
 
 # --- All rules below are in the same format, and they fetch the different packages. --- #
 
@@ -124,5 +135,9 @@ $(INSIGHT):
 $(MPC):
 	@echo downloading file: $@
 	$(CURLGET) '$(MIRROR_MPC_GETFILE)' -o $@
+
+$(NEWLIB):
+	@echo downloading file: $@
+	$(CURLGET) '$(MIRROR_NEWLIB_GETFILE)' -o $@
 
 .PHONY: all
