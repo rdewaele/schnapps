@@ -80,7 +80,10 @@ GMP_OPT      = $(CFG_OPT)
 MPFR_OPT     = $(CFG_OPT) --with-gmp=$(INS_DIR)
 MPC_OPT      = $(CFG_OPT) --with-mpfr=$(INS_DIR) --with-gmp=$(INS_DIR)
 BINUTILS_OPT = $(TC_OPT)
-GCC_OPT      = $(TC_OPT) --enable-languages="c" --with-newlib --with-gnu-as --with-gnu-ld --without-headers\
+# XXX GCC: --with-system-zlib fixes compile failure on some systems
+# see http://gcc.gnu.org/ml/gcc-help/2011-01/msg00011.html
+GCC_OPT      = $(TC_OPT) --with-system-zlib \
+							 --enable-languages="c" --with-newlib --with-gnu-as --with-gnu-ld --without-headers \
                --with-mpc=$(INS_DIR) --with-mpfr=$(INS_DIR) --with-gmp=$(INS_DIR)
 NEWLIB_OPT   = $(TC_OPT) --disable-newlib-supplied-syscalls --with-mpfr=$(INS_DIR) --with-gmp=$(INS_DIR)
 GDB_OPT      = $(TC_OPT)
