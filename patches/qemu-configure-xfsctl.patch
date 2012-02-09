@@ -1,0 +1,14 @@
+diff -Naur qemu-1.0-old/configure qemu-1.0-new/configure
+--- qemu-1.0-old/configure	2011-12-01 21:07:34.000000000 +0100
++++ qemu-1.0-new/configure	2012-02-09 16:27:10.701486242 +0100
+@@ -771,6 +771,10 @@
+   ;;
+   --enable-rbd) rbd="yes"
+   ;;
++  --disable-xfsctl) xfs="no"
++  ;;
++  --enable-xfsctl) xfs="yes"
++  ;;
+   --disable-smartcard) smartcard="no"
+   ;;
+   --enable-smartcard) smartcard="yes"

@@ -125,6 +125,13 @@ all:
 	@echo "will download the latest versions of all packages needed for this toolchain."
 	@echo "You can also opt to manually download some packages and put them in the 'tar'"
 	@echo "directory."
+	@echo "If building Qemu fails with an error looking like the following:"
+	@echo "  File \"schnapps/src/qemu/scripts/qapi-commands.py\", line 376"
+	@echo "    except getopt.GetoptError, err:"
+	@echo "                             ^"
+	@echo "  SyntaxError: invalid syntax"
+	@echo "Then you're using python 3, but qemu expects python 2."
+	@echo "Try 'make PYTHON=python2 qemu', where python2 is the command to launch python 2."
 	@echo "--------------------------------------------------------------------------------"
 	@echo
 	@echo "Common targets:"
@@ -274,10 +281,14 @@ lpc21isp: $(SRC_DIR)/lpc21isp
 		&& cp lpc21isp $(INS_DIR)/bin
 	touch $@
 
-# QEMU
+# QEMU - XXX ignore error when the patch fails, this will happen when the file
+# was already patched, or when qemu gets updated. TODO remove this patch when
+# upstream has integrated and released it. (It's in the pipeline, but I lost
+# the link reference.) Also merge option to QEMU_OPT when patch is removed.
 qemu: $(SRC_DIR)/qemu $(BLD_DIR)/qemu
+	patch -Np1 $</configure patches/qemu-configure-xfsctl.patch || true
 	cd $(BLD_DIR)/qemu && \
-		$</configure $(QEMU_OPT) && \
+		$</configure $(QEMU_OPT) --disable-xfsctl && \
 		$(MAKE) all && \
 		$(MAKE) install
 	touch $@
