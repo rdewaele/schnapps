@@ -149,7 +149,7 @@ clean:
 
 $(BINUTILS):
 	@echo downloading file: $@
-	@$(CURLGET) '$(MIRROR_BINUTILS_GET)/$@' -o $@ 2>&1 | grep \\\#
+	@$(CURLGET) '$(MIRROR_BINUTILS_GET)/$@' -o $@
 	
 $(GCC):
 	@echo downloading file: $@
