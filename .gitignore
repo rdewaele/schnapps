@@ -4,3 +4,7 @@ tar/
 build/
 # nor the sources dir
 src/
+# ignore vim swap files
+*.swp
+# ignore temp files
+*~
