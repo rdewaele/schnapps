@@ -170,6 +170,10 @@ $(DIRECTORIES): %:
 $(BUILDS): $(BLD_DIR)/%: | $(BLD_DIR)
 	mkdir $@
 
+# directories in the installation dir - currently only used by lpc21isp
+$(INS_DIR)/%: | $(INS_DIR)
+	mkdir $@
+
 # The '$(TAR_DIR)/%*' prerequisite will make the rule execute when a new tarball
 # is provided for a given package. TODO make this actually work :p
 $(SOURCES): $(SRC_DIR)/%: $(wildcard $(TAR_DIR)/%*) | $(SRC_DIR)
@@ -275,7 +279,7 @@ openocd: $(SRC_DIR)/openocd
 
 # lpc21isp
 # The build system of lpc21isp is nothing more than a simple makefile.
-lpc21isp: $(SRC_DIR)/lpc21isp
+lpc21isp: $(SRC_DIR)/lpc21isp | $(INS_DIR)/bin
 	cd $< && \
 		$(MAKE) \
 		&& cp lpc21isp $(INS_DIR)/bin

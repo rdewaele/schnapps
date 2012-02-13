@@ -24,36 +24,40 @@ LINKFLTR:=perl -MHTML::LinkExtor -le \
 ###########
 # this mirror automatically redirects to some mirror, supposedly close to the user
 GNU_MIRROR_ROOT := http://ftpmirror.gnu.org
-# apache servers typically support this style of ordering for directory listings
-SORTED_IDX      := ?C=M;O=D
+# apache servers typically support these styles of ordering for directory listings
+# newest file first
+SRT_IDX_MOD     := ?C=M;O=D
+# biggest file first
+SRT_IDX_SIZ     := ?C=S;O=D
 
 # Binutils (requires support for sorting index by date)
 MIRROR_BINUTILS_GET := $(GNU_MIRROR_ROOT:%=%/binutils)
-MIRROR_BINUTILS_IDX := $(MIRROR_BINUTILS_GET:%=%/$(SORTED_IDX))
+MIRROR_BINUTILS_IDX := $(MIRROR_BINUTILS_GET:%=%/$(SRT_IDX_MOD))
 
 # GCC (requires support for sorting index by date)
 MIRROR_GCC_ROOT := $(GNU_MIRROR_ROOT:%=%/gcc)
-MIRROR_GCC_RIDX := $(MIRROR_GCC_ROOT:%=%/$(SORTED_IDX))
+MIRROR_GCC_RIDX := $(MIRROR_GCC_ROOT:%=%/$(SRT_IDX_MOD))
 MIRROR_GCC_GET  := $(MIRROR_GCC_ROOT:%=%/$(shell $(CURLIDX) '$(MIRROR_GCC_RIDX)' | $(LINKFLTR) | grep -m1 '^gcc.*\/$$'))
-MIRROR_GCC_IDX  := $(MIRROR_GCC_GET:%=%/$(SORTED_IDX))
+MIRROR_GCC_IDX  := $(MIRROR_GCC_GET:%=%/$(SRT_IDX_MOD))
 
 # GDB (requires support for sorting index by date)
 MIRROR_GDB_GET := $(GNU_MIRROR_ROOT:%=%/gdb)
-MIRROR_GDB_IDX := $(MIRROR_GDB_GET:%=%/$(SORTED_IDX))
+MIRROR_GDB_IDX := $(MIRROR_GDB_GET:%=%/$(SRT_IDX_MOD))
 
 # GMP (requires support for sorting index by date)
 MIRROR_GMP_GET := $(GNU_MIRROR_ROOT:%=%/gmp)
-MIRROR_GMP_IDX := $(MIRROR_GMP_GET:%=%/$(SORTED_IDX))
+MIRROR_GMP_IDX := $(MIRROR_GMP_GET:%=%/$(SRT_IDX_MOD))
 
 # Insight (requires support for sorting index by date)
 # Not hosted on GNU mirrors, and no redirection alternative, so we chose to hardcode the kernel.org mirror
 # XXX In the future, mirror selection could be added to this system.
+# XXX We have to go by size because for some reason, not the newest file was modified last.
 MIRROR_INSIGHT_GET := http://mirrors.kernel.org/sources.redhat.com/insight/releases
-MIRROR_INSIGHT_IDX := $(MIRROR_INSIGHT_GET:%=%/$(SORTED_IDX))
+MIRROR_INSIGHT_IDX := $(MIRROR_INSIGHT_GET:%=%/$(SRT_IDX_SIZ))
 
 # MPFR (requires support for sorting index by date)
 MIRROR_MPFR_GET := $(GNU_MIRROR_ROOT:%=%/mpfr)
-MIRROR_MPFR_IDX := $(MIRROR_MPFR_GET:%=%/$(SORTED_IDX))
+MIRROR_MPFR_IDX := $(MIRROR_MPFR_GET:%=%/$(SRT_IDX_MOD))
 
 # MPC
 # XXX This one is a bit nasty, as there are no mirrors, and directory listing is forbidden (403)
@@ -148,46 +152,64 @@ clean:
 # This is classified as "not our problem".
 
 $(BINUTILS):
+	@rm -f binutils*
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_BINUTILS_GET)/$@' -o $@
 	
 $(GCC):
+	@rm -f gcc*
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_GCC_GET)/$@' -o $@
 
 $(GDB):
+	@rm -f gdb*
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_GDB_GET)/$@' -o $@
 
 $(GMP):
+	@rm -f gmp*
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_GMP_GET)/$@' -o $@
 	
 $(MPFR):
+	@rm -f mpfr*
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_MPFR_GET)/$@' -o $@
 
 $(INSIGHT):
+	@rm -f insight*
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_INSIGHT_GET)/$@' -o $@
 
 $(MPC):
+	@rm -f mpc*
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_MPC_GETFILE)' -o $@
 
 $(NEWLIB):
+	@rm -f newlib*
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_NEWLIB_GETFILE)' -o $@
 
 $(OPENOCD):
+	@rm -f openocd*
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_OPENOCD_GETFILE)' -o $@
 
+# XXX lpc21isp doesn't pack a folder, but separate files, so we repack this
+# package on download.
+LPC21ISPDIRNAME := $(LPC21ISP:%.tar.gz=%)
 $(LPC21ISP):
+	@rm -f lpc21isp*
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_LPC21ISP_GETFILE)' -o $@
+	@mkdir $(LPC21ISPDIRNAME)
+	@tar xf $@ -C $(LPC21ISPDIRNAME)
+	@tar caf $@ $(LPC21ISPDIRNAME)
+	@rm -rf $(LPC21ISPDIRNAME)
 
 $(QEMU):
+	@rm -f qemu*
 	@echo downloading file: $@
 	@$(CURLGET) '$(MIRROR_QEMU_GETFILE)' -o $@
 
