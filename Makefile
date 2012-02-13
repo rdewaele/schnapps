@@ -263,7 +263,7 @@ insight: $(SRC_DIR)/insight $(BLD_DIR)/insight
 	touch $@
 
 # openOCD
-# XXX Current version doesn't support out-of-source builds!
+# XXX Current version (0.5.0) doesn't support out-of-source builds!
 # This is why we don't change to the source dir instead.
 #openocd: $(SRC_DIR)/openocd $(BLD_DIR)/openocd
 openocd: $(SRC_DIR)/openocd
