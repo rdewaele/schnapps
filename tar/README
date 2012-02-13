@@ -1,4 +1,11 @@
-This is the tar directory where the source tarball go for the software supported by the makefile.
+NOTE: lpc21isp is not released as a compressed source folder, but as compressed
+      source _files_. The Makefile takes this into account and recompresses the
+      source, so it becomes a compressed source _folder_, which is necessary for
+      compatibility with the main toolchain Makefile. If you provide your own
+      version of lpc21isp, take this into account!
+
+This is the tar directory where the source tarball go for the software supported
+by the makefile.
 Currently, upstream tested versions are:
 
 	binutils-2.22.tar.xz
