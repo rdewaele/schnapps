@@ -16,7 +16,7 @@ download_s = @$(CURLGET) $(1) -O
 # verbosely download and save a file
 define download_v
 @echo Downloading $(1) ...
-@$(CURLGET) $(1) -O
+$(call download_s,$(1))
 endef
 
 ###########################################
@@ -42,35 +42,49 @@ SRT_IDX_MOD = ?C=M;O=D
 # biggest file first
 SRT_IDX_SIZ = ?C=S;O=D
 
-# get the latest version of a GNU program
-gnu_latest = $(shell $(CURLIDX) '$(GNU_MIRROR)/$(1)/$(SRT_IDX_MOD)' | $(LINKFLTR) | grep -m1 '^$(1).*\.tar\.bz2$$')
-#gnu_getlatest = $(call download,$(1)
-
 GNU_PROGRAMS = binutils gmp mpfr gdb
-GNU_LATEST   = $(foreach prog,$(GNU_PROGRAMS),$(call gnu_latest,$(prog)))
+#GNU_PROGRAMS = binutils 
 
 # first argument is package name, which will become a target
 # second argument is the index page where the program can be found
 # third argument is the way the index page has to be sorted to have the latest package on top
 # fourth argument is the regular expression needed to filter out the first valid link - XXX generic solution might be possible
 # fifth optional argument will be applied to further filter the result
+TAR_REGEXP = '^$(1).*\.tar\.(gz|bz2|xz)$$'
 define PACKAGE_template
-$(1)_LATEST = $(shell $(CURLIDX) '$(2)/$(3)' | $(LINKFLTR) | grep -E -m1 '^$(1).*\.tar\.(gz|bz2|xz)$$')
-$(1)_URL    = $(2)/$$($(1)_LATEST)
+$(1)_INDEX    = $(shell $(CURLIDX) '$(2)/$(3)' | $(LINKFLTR))
+$(1)_ALLPKGS  = $$(strip $$(foreach pkg,$$($(1)_INDEX),$$(shell echo '$$(pkg)' | grep -E $$(TAR_REGEXP))))
+$(1)_BASE     = $$(basename $$(firstword $$($(1)_ALLPKGS)))
+$(1)_LATEST_C = $$(filter $$($(1)_BASE).%,$$($(1)_ALLPKGS))
+$(1)_LATEST   = $$(or $$(filter %.xz,$$($(1)_LATEST_C)),$$(filter %.bz2,$$($(1)_LATEST_C)),$$(filter %.gz,$$($(1)_LATEST_C)))
+
+#$(1)_LATEST  = $(shell $(CURLIDX) '$(2)/$(3)' | $(LINKFLTR) | grep -E -m1 '^$(1).*\.tar\.(gz|bz2|xz)$$')
+$(1)_URL     = $(2)/$$($(1)_LATEST)
 $$($(1)_LATEST): $$(GNU_KEYRING)
+	@echo "basename: $$($(1)_BASE) / latest: $$($(1)_LATEST) / all: $$($(1)_ALLPKGS)"
 	@echo "Downloading $(1): $$@"
 	$$(call download_s,$$($(1)_URL))
+	$$(call download_s,$$($(1)_URL).sig)
 
 ALL_PACKAGES += $$($(1)_LATEST)
 endef
 
+# default target; the dependencies will be added later
 all:
 	echo $^
 
+# 
 $(foreach prog,$(GNU_PROGRAMS),$(eval $(call PACKAGE_template,$(prog),$(GNU_MIRROR)/$(prog),$(SRT_IDX_MOD))))
 
+# default target: add the dependencies
 all: $(ALL_PACKAGES)
 
+# to be able to verify the downloaded packages, the gnu gpg signatures have to be imported
 $(GNU_KEYRING): %:
 	$(call download_v,$(GNU_MIRROR)/$@)
 	gpg -q --import $@
+
+clean:
+	rm -f $(GNU_PROGRAMS:%=%*)
+
+.PHONY: clean all
