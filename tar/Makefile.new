@@ -1,0 +1,76 @@
+# XXX Note that running this makefile with multiple jobs can result in
+# obnoxious output to the screen, as every curl instance will try to
+# display its progress bar. ;-)
+
+###################################
+# HTTP/FTP URL fetching with curl #
+###################################
+# directory index fetching: silent, follow redirections
+CURLIDX = curl -s -L
+# archive fetching: follow redirections, show simple progress bar
+CURLGET = curl -L -\\\#
+# curl No ReDirection, silent
+CURLNRD = curl -s
+# silently download and save a file
+download_s = @$(CURLGET) $(1) -O
+# verbosely download and save a file
+define download_v
+@echo Downloading $(1) ...
+@$(CURLGET) $(1) -O
+endef
+
+###########################################
+# link filtering (html parsing) with perl 
+###########################################
+# parse html and print items linked to
+LINKFLTR=perl -MHTML::LinkExtor -le \
+	'HTML::LinkExtor->new(sub{shift; %attr = @_; print $$attr{href}})->parse_file(*STDIN)'
+
+###########
+# Mirrors #
+###########
+# this mirror automatically redirects to some mirror, supposedly close to the user
+GNU_MIRROR = http://ftpmirror.gnu.org
+# GNU Keyring
+GNU_KEYRING = gnu-keyring.gpg
+
+# apache servers typically support these styles of ordering for directory listings
+# no sort
+NOSRT_IDX   = ''
+# newest file first
+SRT_IDX_MOD = ?C=M;O=D
+# biggest file first
+SRT_IDX_SIZ = ?C=S;O=D
+
+# get the latest version of a GNU program
+gnu_latest = $(shell $(CURLIDX) '$(GNU_MIRROR)/$(1)/$(SRT_IDX_MOD)' | $(LINKFLTR) | grep -m1 '^$(1).*\.tar\.bz2$$')
+#gnu_getlatest = $(call download,$(1)
+
+GNU_PROGRAMS = binutils gmp mpfr gdb
+GNU_LATEST   = $(foreach prog,$(GNU_PROGRAMS),$(call gnu_latest,$(prog)))
+
+# first argument is package name, which will become a target
+# second argument is the index page where the program can be found
+# third argument is the way the index page has to be sorted to have the latest package on top
+# fourth argument is the regular expression needed to filter out the first valid link - XXX generic solution might be possible
+# fifth optional argument will be applied to further filter the result
+define PACKAGE_template
+$(1)_LATEST = $(shell $(CURLIDX) '$(2)/$(3)' | $(LINKFLTR) | grep -E -m1 '^$(1).*\.tar\.(gz|bz2|xz)$$')
+$(1)_URL    = $(2)/$$($(1)_LATEST)
+$$($(1)_LATEST): $$(GNU_KEYRING)
+	@echo "Downloading $(1): $$@"
+	$$(call download_s,$$($(1)_URL))
+
+ALL_PACKAGES += $$($(1)_LATEST)
+endef
+
+all:
+	echo $^
+
+$(foreach prog,$(GNU_PROGRAMS),$(eval $(call PACKAGE_template,$(prog),$(GNU_MIRROR)/$(prog),$(SRT_IDX_MOD))))
+
+all: $(ALL_PACKAGES)
+
+$(GNU_KEYRING): %:
+	$(call download_v,$(GNU_MIRROR)/$@)
+	gpg -q --import $@
