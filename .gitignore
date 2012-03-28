@@ -1,5 +1,3 @@
-# don't put the archives in the repository
-tar/
 # nor the building dir
 build/
 # nor the sources dir

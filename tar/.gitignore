@@ -1,0 +1,7 @@
+# ignore archives
+*.tar.xz
+*.tar.bz2
+*.tar.gz
+
+# ignore keyrings
+*.gpg
