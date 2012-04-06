@@ -29,7 +29,7 @@ my %sf_urls = (
 my %subdirs_urls = (
 # uses subdirs: gcc
 # note: sorting by date doesn't guarantee that we get the highest version
-	GCC      => "http://ftp.easynet.be/ftp/gnu/gcc/?C=M;O=D"
+	GCC      => "http://ftpmirror.gnu.org/gcc/?C=M;O=D"
 );
 
 my $p = HTML::LinkExtor->new;
