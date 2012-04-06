@@ -8,28 +8,28 @@ use URI::URL;
 
 my %idx_urls = (
 # sorted indices: binutils, gmp, mpfr, gdb
-	BINUTILS => "http://ftpmirror.gnu.org/binutils/?C=M;O=D",
-	GMP      => "http://ftpmirror.gnu.org/gmp/?C=M;O=D",
-	MPFR     => "http://ftpmirror.gnu.org/mpfr/?C=M;O=D",
-	GDB      => "http://ftpmirror.gnu.org/gdb/?C=M;O=D",
+	binutils => "http://ftpmirror.gnu.org/binutils/?C=M;O=D",
+	gmp      => "http://ftpmirror.gnu.org/gmp/?C=M;O=D",
+	mpfr     => "http://ftpmirror.gnu.org/mpfr/?C=M;O=D",
+	gdb      => "http://ftpmirror.gnu.org/gdb/?C=M;O=D",
 # first link on page: mpc, qemu
-	MPC      => "http://www.multiprecision.org/index.php?prog=mpc&page=download",
-	QEMU     => "http://wiki.qemu.org/Download",
+	mpc      => "http://www.multiprecision.org/index.php?prog=mpc&page=download",
+	qemu     => "http://wiki.qemu.org/Download",
 # ftp: newlib, insight
-	NEWLIB   => "ftp://sources.redhat.com/pub/newlib/index.html",
+	newlib   => "ftp://sources.redhat.com/pub/newlib/index.html",
 	# if you want another mirror, see http://sourceware.org/mirrors.html
 	# note: sorted by size; timestamps are all the same ...
-	INSIGHT  => "http://mirrors.kernel.org/sources.redhat.com/insight/releases/?C=S;O=D"
+	insight  => "http://mirrors.kernel.org/sources.redhat.com/insight/releases/?C=S;O=D"
 );
 my %sf_urls = (
 # sourceforge direct links (needs filename extraction): openocd, lpc21isp
-	OPENOCD  => "http://sourceforge.net/projects/openocd/files/latest/download",
-	LPC21ISP => "http://sourceforge.net/projects/lpc21isp/files/latest/download",
+	openocd  => "http://sourceforge.net/projects/openocd/files/latest/download",
+	lpc21isp => "http://sourceforge.net/projects/lpc21isp/files/latest/download",
 );
 my %subdirs_urls = (
 # uses subdirs: gcc
 # note: sorting by date doesn't guarantee that we get the highest version
-	GCC      => "http://ftpmirror.gnu.org/gcc/?C=M;O=D"
+	gcc      => "http://ftpmirror.gnu.org/gcc/?C=M;O=D"
 );
 
 my $p = HTML::LinkExtor->new;

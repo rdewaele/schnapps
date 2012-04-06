@@ -1,7 +1,7 @@
 #  Cross-platform makefile automating the build process for a GNU-based
 #  cross-compiler for ARM bare-board targets.  See README for details.
 #
-#  Copyright (C) 2009-2011 Robrecht Dewaele
+#  Copyright (C) 2009-2012 Robrecht Dewaele
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -177,10 +177,14 @@ $(INS_DIR)/%: | $(INS_DIR)
 # The '$(TAR_DIR)/%*' prerequisite will make the rule execute when a new tarball
 # is provided for a given package. TODO make this actually work :p
 $(SOURCES): $(SRC_DIR)/%: $(wildcard $(TAR_DIR)/%*) | $(SRC_DIR)
+	$(MAKE) -C $(TAR_DIR) $*
 	@# Start with a fresh folder, i.e. when a tarball got updated.
 	rm -rf $(SRC_DIR)/$**
 	tar xf $(TAR_DIR)/$** -C $(SRC_DIR)
 	mv $(SRC_DIR)/$** $@
+
+$(TAR_DIR)/%:
+	$(MAKE) -C $(TAR_DIR) $*
 
 update-packages:
 	$(MAKE) -C $(TAR_DIR)
