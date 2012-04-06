@@ -13,6 +13,7 @@ include deps.inc
 ALL_PKGS=
 define pkg_template
 $(info > $($(1)))
+$(1): $($(1))
 $($(1)):
 	$$(info downloading $$@ from $$($(1)_URL))
 	@curl -s -L -o $$@ $$($(1)_URL) && echo finished downloading $$@
