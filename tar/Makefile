@@ -12,7 +12,6 @@ include deps.inc
 
 ALL_PKGS=
 define pkg_template
-$(info > $($(1)))
 $(1): $($(1))
 $($(1)):
 	$$(info downloading $$@ from $$($(1)_URL))
@@ -21,8 +20,12 @@ $($(1)):
 ALL_PKGS+=$$($(1))
 endef
 
-$(info Package Versions:)
 $(foreach pkg,$(ALL_PKGS_NAMES),$(eval $(call pkg_template,$(pkg))))
+
+ifdef DEBUG
+ $(info Package Versions:)
+ $(foreach pkg,$(ALL_PKGS),$(info > $(pkg)))
+endif
 
 all: $(ALL_PKGS)
 
