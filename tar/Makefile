@@ -31,6 +31,7 @@ ALL_PKGS=
 define pkg_template
 $(1): $($(1))
 $($(1)):
+	$$(shell rm -f $(1)*.tar.*)
 	$$(info downloading $$@ from $$($(1)_URL))
 	$$(if $$(findstring lpc21isp,$(1)),\
 		$$(call dowload_lpc21isp,$($(1)),$($(1)_URL),$(basename $($(1)))),\
