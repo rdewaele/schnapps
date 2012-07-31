@@ -82,7 +82,7 @@ MPC_OPT      = $(CFG_OPT) --with-mpfr=$(INS_DIR) --with-gmp=$(INS_DIR)
 BINUTILS_OPT = $(TC_OPT)
 # XXX GCC: --with-system-zlib fixes compile failure on some systems
 # see http://gcc.gnu.org/ml/gcc-help/2011-01/msg00011.html
-GCC_OPT      = $(TC_OPT) --with-system-zlib \
+GCC_OPT      = $(TC_OPT) \
 							 --enable-languages="c" --with-newlib --with-gnu-as --with-gnu-ld --without-headers \
                --with-mpc=$(INS_DIR) --with-mpfr=$(INS_DIR) --with-gmp=$(INS_DIR)
 NEWLIB_OPT   = $(TC_OPT) --disable-newlib-supplied-syscalls --with-mpfr=$(INS_DIR) --with-gmp=$(INS_DIR)
@@ -99,16 +99,15 @@ QEMU_OPT     = --prefix=$(INS_DIR) \
 							 --disable-sparse --disable-strip --disable-werror --disable-sdl \
 						 	 --disable-vnc --disable-xen --disable-brlapi --disable-vnc-tls \
 						 	 --disable-vnc-sasl --disable-vnc-jpeg --disable-vnc-png \
-						 	 --disable-vnc-thread --disable-curses --disable-curl \
-							 --disable-fdt --disable-check-utests --disable-bluez \
-							 --disable-slirp --disable-kvm --disable-nptl --disable-system \
-						 	 --disable-user --disable-linux-user --disable-darwin-user \
-						 	 --disable-bsd-user --disable-guest-base --disable-pie \
-							 --disable-uuid --disable-vde --disable-linux-aio --disable-attr \
-						 	 --disable-blobs --disable-docs --disable-vhost-net \
-							 --disable-spice --disable-libiscsi --disable-smartcard \
-							 --disable-smartcard-nss --disable-usb-redir \
-							 --disable-guest-agent --disable-opengl
+						 	 --disable-vnc-thread --disable-curses --disable-smartcard-nss \
+							 --disable-fdt --disable-bluez --disable-slirp --disable-kvm \
+							 --disable-nptl --disable-system --disable-user --disable-docs \
+							 --disable-linux-user --disable-bsd-user --disable-guest-base \
+							 --disable-pie --disable-uuid --disable-vde --disable-linux-aio \
+							 --disable-attr --disable-blobs --disable-curl --disable-spice \
+							 --disable-libiscsi --disable-smartcard --disable-opengl \
+							 --disable-vhost-net --disable-usb-redir --disable-guest-agent \
+							 --disable-xfsctl
 
 
 #
@@ -289,14 +288,10 @@ lpc21isp: $(SRC_DIR)/lpc21isp | $(INS_DIR)/bin
 		&& cp lpc21isp $(INS_DIR)/bin
 	touch $@
 
-# QEMU - XXX ignore error when the patch fails, this will happen when the file
-# was already patched, or when qemu gets updated. TODO remove this patch when
-# upstream has integrated and released it. (It's in the pipeline, but I lost
-# the link reference.) Also merge option to QEMU_OPT when patch is removed.
+# QEMU
 qemu: $(SRC_DIR)/qemu $(BLD_DIR)/qemu
-	patch -Np1 $</configure patches/qemu-configure-xfsctl.patch || true
 	cd $(BLD_DIR)/qemu && \
-		$</configure $(QEMU_OPT) --disable-xfsctl && \
+		$</configure $(QEMU_OPT) && \
 		$(MAKE) all && \
 		$(MAKE) install
 	touch $@
