@@ -74,7 +74,8 @@ DATE        = `date +%F_%H-%M-%S`
 # global
 CFG_OPT      = --disable-shared --disable-werror --prefix=$(INS_DIR)
 # toolchain (binutils, gcc and newlib)
-TC_OPT       = $(CFG_OPT) --target=arm-elf --enable-interwork --enable-multilib
+TC_OPT       = $(CFG_OPT) --target=arm-elf --enable-interwork --enable-multilib \
+							 --with-float=soft
 # package-specific
 GMP_OPT      = $(CFG_OPT)
 MPFR_OPT     = $(CFG_OPT) --with-gmp=$(INS_DIR)
